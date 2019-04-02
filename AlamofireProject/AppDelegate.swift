@@ -7,7 +7,7 @@
 //
 
 import UIKit
-
+import OAuthSwift
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -16,6 +16,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+
+        var rootViewController = self.window!.rootViewController
+        let isUserLoggedIn:Bool = UserDefaults.standard.bool(forKey: "isLoggedIn")
+        if(isUserLoggedIn) {
+            let mainStoryboard = UIStoryboard(name: "Main" , bundle: nil)
+            let protectedPage = mainStoryboard.instantiateViewController(withIdentifier: "MainViewController") as! MainViewController
+            window!.rootViewController = protectedPage
+            window!.makeKeyAndVisible()
+        }
+        else{
+            let mainStoryboard = UIStoryboard(name: "Main" , bundle: nil)
+            let loginViewController = mainStoryboard.instantiateViewController(withIdentifier: "LoginViewController") as! LoginViewController
+            window!.rootViewController = loginViewController
+            window!.makeKeyAndVisible()
+            
+            
+        }
         return true
     }
 
@@ -41,6 +58,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
-
+    @available(iOS 9.0, *)
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        applicationHandle(url: url)
+        return true
+    }
 }
 
+extension AppDelegate {
+    
+    func applicationHandle(url: URL) {
+        if (url.host == "oauth-callback") {
+            OAuthSwift.handle(url: url)
+        } else {
+            // Google provider is the only one wuth your.bundle.id url schema.
+            OAuthSwift.handle(url: url)
+        }
+    }
+}
